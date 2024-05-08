@@ -38,7 +38,7 @@ class PengajuanController extends Controller
     {
         $product = Inventory::where('enabled', 1)->get();
 
-        return view('transaction.form',compact('product'));
+        return view('transaction.form', compact('product'));
     }
 
     public function store(Request $request)
@@ -58,7 +58,7 @@ class PengajuanController extends Controller
             $trx->enabled = 1;
             $trx->save();
 
-            foreach($request->product_id as $key => $row){
+            foreach ($request->product_id as $key => $row) {
                 $product = Inventory::where('id', $row)->first();
                 $trxDetail = new TransactionDetail();
                 $trxDetail->transaction_id = $trx->id;
@@ -70,8 +70,10 @@ class PengajuanController extends Controller
 
             Cache::flush();
             DB::commit();
-            
-            return redirect()->route('pengajuan')->with('success', 'Berhasil tambah produk!');
+
+            toastr()->success('Data berhasil ditambahkan!');
+
+            return redirect()->route('pengajuan');
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -94,25 +96,34 @@ class PengajuanController extends Controller
         $store->enabled = 1;
         $store->save();
 
-        return redirect()->route('pengajuan')->with('success', 'Berhasil tambah produk!');
+        toastr()->success('Data berhasil diubah!');
+        return redirect()->route('pengajuan');
     }
 
     public function updateStatus($id, $status)
     {
+        if ($status == 1) {
+            toastr()->info('Data berhasil dipulihkan!');
+        } else {
+            toastr()->warning('Data berhasil dihapus!');
+        }
+
         $update = Transaction::findOrFail($id);
         $update->enabled = $status;
         $update->save();
-        
-        return redirect()->route('pengajuan')->with('success', 'Berhasil tambah produk!');
+
+        return redirect()->route('pengajuan');
     }
 
     public function updateStatusPengajuan($id, $status)
     {
+
         $update = Transaction::findOrFail($id);
         $update->status = $status;
         $update->save();
-        
-        return redirect()->route('pengajuan')->with('success', 'Berhasil tambah produk!');
+
+        toastr()->success('Data berhasil diubah!');
+        return redirect()->route('pengajuan');
     }
 
     public function invoice($id)
@@ -127,8 +138,8 @@ class PengajuanController extends Controller
         $data = Transaction::findOrFail($id);
 
         $pdf = Pdf::loadView('pdf.invoice', compact('data'));
-        return $pdf->stream('invoice'.time().'-.pdf');
+        return $pdf->stream('invoice' . time() . '-.pdf');
 
     }
-    
+
 }

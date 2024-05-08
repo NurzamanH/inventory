@@ -46,7 +46,8 @@ class InventoryController extends Controller
         $store->enabled = 1;
         $store->save();
 
-        return redirect()->route('inventory')->with('success', 'Berhasil tambah produk!');
+        toastr()->success('Data berhasil ditambahkan!');
+        return redirect()->route('inventory');
     }
 
     public function edit($id)
@@ -66,20 +67,27 @@ class InventoryController extends Controller
         $store->enabled = 1;
         $store->save();
 
-        return redirect()->route('inventory')->with('success', 'Berhasil tambah produk!');
+        toastr()->success('Data berhasil diubah!');
+        return redirect()->route('inventory');
     }
 
     public function updateStatus($id, $status)
     {
+        if ($status == 1) {
+            toastr()->info('Data berhasil dipulihkan!');
+        } else {
+            toastr()->warning('Data berhasil dihapus!');
+        }
         $update = Inventory::findOrFail($id);
         $update->enabled = $status;
         $update->save();
-        
-        return redirect()->route('inventory')->with('success', 'Berhasil tambah produk!');
+        // Display a success toast with no title
+        return redirect()->route('inventory');
     }
 
     public function exportExcel(Request $request)
     {
+
         $data['search'] = $request->search;
 
         return Excel::download(new ExportsInventory($data), 'Inventory.xlsx');

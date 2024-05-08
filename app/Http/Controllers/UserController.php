@@ -47,7 +47,8 @@ class UserController extends Controller
         $store->enabled = 1;
         $store->save();
 
-        return redirect()->route('user')->with('success', 'Berhasil tambah user!');
+        toastr()->success('Data berhasil ditambahkan!');
+        return redirect()->route('user');
     }
 
     public function setRole($id)
@@ -60,9 +61,9 @@ class UserController extends Controller
 
     public function setRoleProcess(Request $request, $id)
     {
-        if($request->menu_id){
+        if ($request->menu_id) {
             $menu = MenusHasUser::where('user_id', $id)->delete();
-            foreach($request->menu_id as $row){
+            foreach ($request->menu_id as $row) {
                 $storeMenu = new MenusHasUser();
                 $storeMenu->user_id = $id;
                 $storeMenu->menu_id = $row;
@@ -75,17 +76,22 @@ class UserController extends Controller
         $store->password = bcrypt($request->password);
         $store->save();
 
-        
 
-        return redirect()->route('user')->with('success', 'Berhasil tambah user!');
+        toastr()->success('Data berhasil diubah!');
+        return redirect()->route('user');
     }
 
     public function updateStatus($id, $status)
     {
+        if ($status == 1) {
+            toastr()->info('Data berhasil dipulihkan!');
+        } else {
+            toastr()->warning('Data berhasil dihapus!');
+        }
         $update = User::findOrFail($id);
         $update->enabled = $status;
         $update->save();
-        
-        return redirect()->route('user')->with('success', 'Berhasil tambah produk!');
+
+        return redirect()->route('user');
     }
 }
