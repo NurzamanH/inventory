@@ -34,7 +34,7 @@ class PengajuanController extends Controller
         return view('transaction.index');
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $product = Inventory::where('enabled', 1)->get();
 
@@ -44,9 +44,7 @@ class PengajuanController extends Controller
     public function store(Request $request)
     {
         DB::beginTransaction();
-
         try {
-
             $trx = new Transaction();
             $trx->user_id = Auth::user()->id;
             $trx->name = $request->name;
@@ -60,12 +58,18 @@ class PengajuanController extends Controller
 
             foreach ($request->product_id as $key => $row) {
                 $product = Inventory::where('id', $row)->first();
+                if ($request->qty[$key] > $product->qty) {
+                    toastr()->error('Jumlah Stok ' . $product->name . ' tidak mencukupi!');
+                    return redirect()->route('pengajuan.create');
+                }
                 $trxDetail = new TransactionDetail();
                 $trxDetail->transaction_id = $trx->id;
                 $trxDetail->product_id = $product->id;
                 $trxDetail->qty = $request->qty[$key];
                 $trxDetail->enabled = 1;
                 $trxDetail->save();
+                $product->qty = $product->qty - $request->qty[$key];
+                $product->update();
             }
 
             Cache::flush();
